@@ -1,0 +1,14 @@
+# Arquivos de objeto compilados
+src/*.o
+*.o
+
+# Executável final
+*.exe
+chip8
+
+# Arquivos de configuração do editor
+.vscode/
+
+# Arquivos de sistema operacional
+.DS_Store
+Thumbs.db
