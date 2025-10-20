@@ -51,7 +51,13 @@ int chip8_load_rom(Chip8State* state, const char* filename){
     long rom_size = ftell(rom_file);
     fseek(rom_file, 0, SEEK_SET);
 
-    if (rom_size > (MEMORY_SIZE - ROM_START_ADDRESS)){
+    if (rom_size < 0) { 
+        fprintf(stderr, "ERRO: Falha ao ler o tamanho da ROM (ftell).\n");
+        fclose(rom_file);
+        return 0;
+    }
+
+    if ((unsigned long)rom_size > (MEMORY_SIZE - ROM_START_ADDRESS)){
         fprintf(stderr, "ERRO: ROM muito grande para a memória.\n");
         fclose(rom_file);
         return 0; // Falha
@@ -59,7 +65,7 @@ int chip8_load_rom(Chip8State* state, const char* filename){
 
     size_t read_size = fread(&state->memory[ROM_START_ADDRESS], 1, rom_size, rom_file);
 
-    if (read_size != rom_size){
+    if (read_size != (size_t)rom_size){
         fprintf(stderr, "ERRO: Falha ao ler a ROM inteira.\n");
         fclose(rom_file);
         return 0; // Falha
@@ -158,12 +164,13 @@ void chip8_emulate_cycle(Chip8State* state){
             state->V[X] ^= state->V[Y];
             break;
         
-        case 0x4: // 8XY4: ADD
+        case 0x4: // 8XY4 - ADD Vx, Vy
+        { // <--- ADICIONE ESTA CHAVE DE ABERTURA
             uint16_t sum = state->V[X] + state->V[Y];
             state->V[0xF] = (sum > 0xFF) ? 1 : 0;
             state->V[X] = (uint8_t)sum;
             break;
-        
+        }
         case 0x5: // 8XY5: SUB
             state->V[0xF] = (state->V[X] > state->V[Y]) ? 1 : 0;
             state->V[X] -= state->V[Y];
@@ -208,6 +215,7 @@ void chip8_emulate_cycle(Chip8State* state){
         break;
     
     case 0xD000: // Opcode DXYN: DRW (Draw)
+    {
         uint8_t x_coord = state->V[X] % VIDEO_WIDTH;
         uint8_t y_coord = state->V[Y] % VIDEO_HEIGHT;
         uint8_t height = N;
@@ -237,7 +245,7 @@ void chip8_emulate_cycle(Chip8State* state){
         }
         state->draw_flag = 1;
         break;
-    
+    }
     case 0xE000: // Opcode EXNN
         switch (NN){
         case 0x9E: // Opcode EX9E
@@ -265,6 +273,7 @@ void chip8_emulate_cycle(Chip8State* state){
             break;
         
         case 0x0A: // Opcode FX0A
+        {
             int key_pressed = -1;
             for (int i = 0; i < KEYPAD_SIZE; i++){
                 if (state->keypad[i]){
@@ -279,7 +288,7 @@ void chip8_emulate_cycle(Chip8State* state){
                 state->pc -= 2;
             }
             break;
-        
+        }
         case 0x15: // Opcode FX15
             state->delay_timer = state->V[X];
             break;
@@ -297,24 +306,23 @@ void chip8_emulate_cycle(Chip8State* state){
             break;
         
         case 0x33: // Opcode FX33
+        {
             uint8_t value = state->V[X];
             state->memory[state->I]     = value / 100;
             state->memory[state->I + 1] = (value / 10) % 10;
             state->memory[state->I + 2] = value % 10;
             break;
-        
+        }
         case 0x55: // Opcode FX55
             for (int i = 0; i < X; i++){
                 state->memory[state->I + i] = state->V[i];
             }
-            
             break;
         
         case 0x65: // Opcode FX65
             for (int i = 0; i < X; i++){
                 state->V[i] = state->memory[state->I + i];
             }
-            
             break;
         
         default:
