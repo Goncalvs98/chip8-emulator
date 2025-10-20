@@ -65,9 +65,9 @@ Estado Atual
 
     [X] Implementar o ciclo Fetch-Decode-Execute.
 
-    [ ] TODO: Implementar os 35 opcodes do CHIP-8.
+    [X] Implementar os 35 opcodes do CHIP-8.
 
-    [ ] TODO: Renderizar o video_buffer na tela.
+    [X] Renderizar o video_buffer na tela.
 
     [ ] TODO: Implementar o input do teclado.
 

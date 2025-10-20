@@ -9,10 +9,14 @@
 const int CHIP8_WIDTH = 64;
 const int CHIP8_HEIGHT = 32;
 const int SCALE_FACTOR = 10;
+const int WINDOW_WIDTH = CHIP8_WIDTH * SCALE_FACTOR;
+const int WINDOW_HEIGHT = CHIP8_HEIGHT * SCALE_FACTOR;
+
+const int CYCLES_PER_FRAME = 10;
 
 int main(int argc, char* argv[])
 {
-    sran(time(NULL)); // Semear o gerador aleatório
+    srand(time(NULL)); // Semear o gerador aleatório
 
     // Start setup ROM
     if (argc < 2){
@@ -38,10 +42,8 @@ int main(int argc, char* argv[])
 
     SDL_Window* window = SDL_CreateWindow(
         "Emulador CHIP-8",
-        SDL_WINDOWPOS_UNDEFINED,
-        SDL_WINDOWPOS_UNDEFINED,
-        CHIP8_WIDTH * SCALE_FACTOR,
-        CHIP8_HEIGHT * SCALE_FACTOR,
+        SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+        WINDOW_WIDTH, WINDOW_HEIGHT,
         SDL_WINDOW_SHOWN
     );
 
@@ -59,6 +61,19 @@ int main(int argc, char* argv[])
         return 1;
     }
 
+    SDL_Texture* texture = SDL_CreateTexture(
+        renderer,
+        SDL_PIXELFORMAT_ARGB8888,
+        SDL_TEXTUREACCESS_STREAMING,
+        CHIP8_WIDTH,
+        CHIP8_HEIGHT
+    );
+
+    if (!texture){
+        fprintf(stderr, "Erro ao criar textura: %s\n", SDL_GetError());
+        return 1;
+    }
+
     printf("Setup SDL2 bem sucedido!\n");
     // End setup Graphics
 
@@ -71,16 +86,42 @@ int main(int argc, char* argv[])
             }
         }
 
-        chip8_emulate_cycle(&chip8_state);
+        for (int i = 0; i < CYCLES_PER_FRAME; i++){
+            chip8_emulate_cycle(&chip8_state);
+        }
+        
+        if (chip8_state.delay_timer > 0){
+            chip8_state.delay_timer--;
+        }
+
+        if (chip8_state.sound_timer > 0){
+            if (chip8_state.sound_timer == 1){
+                printf("BEEP!\n");
+                // TODO: Tocar Beep
+            }
+            chip8_state.sound_timer--;
+        }
 
         SDL_SetRenderDrawColor(renderer, 5, 5, 30, 255);
         SDL_RenderClear(renderer);
 
+        if (chip8_state.draw_flag){
+            SDL_UpdateTexture(
+                texture,
+                NULL,
+                chip8_state.video_buffer,
+                CHIP8_WIDTH * sizeof(uint32_t)
+            );
+            chip8_state.draw_flag = 0;
+        }
+
+        SDL_RenderCopy(renderer, texture, NULL, NULL);
+
         SDL_RenderPresent(renderer);
         SDL_Delay(16);
-        
     }
 
+    SDL_DestroyTexture(texture);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();

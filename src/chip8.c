@@ -1,5 +1,6 @@
 #include "chip8.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 const unsigned int FONTSET_START_ADDRESS = 0x50;
@@ -325,15 +326,4 @@ void chip8_emulate_cycle(Chip8State* state){
         printf("Opcode desconhecido: 0x%X\n", opcode);
         break;
     }
-
-    // 4. Update Timers
-    if (state->delay_timer > 0){
-        state->delay_timer--;
-    }
-
-    if (state->sound_timer > 0){
-        // TODO: Emitir um BEEP
-        state->sound_timer--;
-    }
-    
 }
