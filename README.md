@@ -54,14 +54,23 @@ O executável espera um argumento: o caminho para a ROM do CHIP-8 que você dese
 ```
 
 Estado Atual
+
     [X] Setup do projeto com clang, make e SDL2.
+
     [X] Abre uma janela gráfica usando SDL2.
+
     [X] Rotina de inicialização da CPU (limpa memória, carrega fontset).
+
     [X] Carrega a ROM do disco para a memória simulada.
-    [ ] TODO: Implementar o ciclo Fetch-Decode-Execute.
+
+    [X] Implementar o ciclo Fetch-Decode-Execute.
+
     [ ] TODO: Implementar os 35 opcodes do CHIP-8.
+
     [ ] TODO: Renderizar o video_buffer na tela.
+
     [ ] TODO: Implementar o input do teclado.
+
     [ ] TODO: Implementar os timers (delay e som).
 
 ---

@@ -1,4 +1,7 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
 #define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
 #include "chip8.h"
@@ -8,7 +11,10 @@ const int CHIP8_HEIGHT = 32;
 const int SCALE_FACTOR = 10;
 
 int main(int argc, char* argv[])
-{    
+{
+    sran(time(NULL)); // Semear o gerador aleatório
+
+    // Start setup ROM
     if (argc < 2){
         fprintf(stderr, "Uso: %s <caminho_para_a_rom>\n", argv[0]);
         return 1;
@@ -22,7 +28,9 @@ int main(int argc, char* argv[])
     }
 
     printf("ROM '%s' carregada com sucesso!\n", argv[1]);
+    // End setup ROM
  
+    // Start setup Graphics
     if (SDL_Init(SDL_INIT_VIDEO) < 0){
         fprintf(stderr, "Erro ao inicializar SDL: %s\n", SDL_GetError());
         return 1;
@@ -52,6 +60,7 @@ int main(int argc, char* argv[])
     }
 
     printf("Setup SDL2 bem sucedido!\n");
+    // End setup Graphics
 
     int running = 1;
     while (running) {
@@ -61,6 +70,8 @@ int main(int argc, char* argv[])
                 running = 0;
             }
         }
+
+        chip8_emulate_cycle(&chip8_state);
 
         SDL_SetRenderDrawColor(renderer, 5, 5, 30, 255);
         SDL_RenderClear(renderer);
